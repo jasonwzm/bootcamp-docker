@@ -1,49 +1,31 @@
-# Centos based container with Java and Tomcat
-FROM centos:centos7
-MAINTAINER jasonwzm
+FROM centos:centos6
 
-# Install prepare infrastructure
-RUN yum -y update && \
-	yum -y install wget && \
-	yum -y install tar
+#Install WGET
+RUN yum install -y wget
 
-# Prepare environment
-ENV JAVA_HOME /opt/java
-ENV CATALINA_HOME /opt/tomcat
-ENV PATH $PATH:$JAVA_HOME/bin:$CATALINA_HOME/bin:$CATALINA_HOME/scripts
+ #Install tar
+RUN yum install -y tar
 
-# Install Oracle Java7
-RUN wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" \
-	http://download.oracle.com/otn-pub/java/jdk/7u71-b14/jdk-7u71-linux-x64.tar.gz && \
-	tar -xvf jdk-7u71-linux-x64.tar.gz && \
-	rm jdk*.tar.gz && \
-	mv jdk* ${JAVA_HOME}
+ # Download JDK
+RUN cd /opt;wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-x64.tar.gz; pwd
 
+RUN cd /opt;tar xvf jdk-7u55-linux-x64.tar.gz
+RUN alternatives --install /usr/bin/java java /opt/jdk1.7.55/bin/java 2
 
-# Install Tomcat
-RUN wget http://apache-mirror.rbc.ru/pub/apache/tomcat/tomcat-8/v8.0.15/bin/apache-tomcat-8.0.15.tar.gz && \
-	tar -xvf apache-tomcat-8.0.15.tar.gz && \
-	rm apache-tomcat*.tar.gz && \
-	mv apache-tomcat* ${CATALINA_HOME}
+ # Download Apache Tomcat 7
+RUN cd /tmp;wget http://apache.mirrors.pair.com/tomcat/tomcat-7/v7.0.61/bin/apache-tomcat-7.0.61.tar.gz
 
-RUN chmod +x ${CATALINA_HOME}/bin/*sh
+ # untar and move to proper location
+RUN cd /tmp;tar xvf apache-tomcat-7.0.61.tar.gz
 
-# Create Tomcat admin user
-ADD create_admin_user.sh $CATALINA_HOME/scripts/create_admin_user.sh
-ADD tomcat.sh $CATALINA_HOME/scripts/tomcat.sh
-RUN chmod +x $CATALINA_HOME/scripts/*.sh
+RUN cd /tmp;mv apache-tomcat-7.0.61 /opt/tomcat7
 
-# Create tomcat user
-RUN groupadd -r tomcat && \
-	useradd -g tomcat -d ${CATALINA_HOME} -s /sbin/nologin  -c "Tomcat user" tomcat && \
-	chown -R tomcat:tomcat ${CATALINA_HOME}
+RUN chmod -R 755 /opt/tomcat7
 
-WORKDIR /opt/tomcat
+ENV JAVA_HOME /opt/jdk1.7.0_55
 
 EXPOSE 8080
-EXPOSE 8009
 
-RUN curl https://github.com/jasonwzm/bootcamp-binary/blob/master/ROOT.war -o $CATALINA_HOME/webapps/ROOT.war
+RUN curl https://github.com/jasonwzm/bootcamp-binary/blob/master/ROOT.war -o /opt/tomcat7/webapps/ROOT.war
 
-USER tomcat
-CMD ["tomcat.sh"]
+CMD /opt/tomcat7/bin/catalina.sh run
