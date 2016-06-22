@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/jboss-webserver-3/webserver30-tomcat7-openshift:1.2
+FROM tomcat:8.0-jre8
 
 EXPOSE 8080 8888
 
