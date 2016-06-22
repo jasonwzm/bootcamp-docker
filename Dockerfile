@@ -34,14 +34,11 @@ ADD tomcat.sh $CATALINA_HOME/scripts/tomcat.sh
 RUN chmod +x $CATALINA_HOME/scripts/*.sh
 
 # Create tomcat user
-RUN groupadd -r tomcat && \
-	useradd -g tomcat -d ${CATALINA_HOME} -s /sbin/nologin  -c "Tomcat user" tomcat && \
-	chown -R tomcat:tomcat ${CATALINA_HOME}
+RUN groupadd -r tomcat && useradd -g tomcat -d ${CATALINA_HOME} -s /sbin/nologin -c "Tomcat user" tomcat && chown -R tomcat:tomcat ${CATALINA_HOME}
 
 WORKDIR /opt/tomcat
 
 EXPOSE 8080
-EXPOSE 8009
 
 RUN curl https://github.com/jasonwzm/bootcamp-binary/blob/master/ROOT.war -o $CATALINA_HOME/webapps/ROOT.war
 
